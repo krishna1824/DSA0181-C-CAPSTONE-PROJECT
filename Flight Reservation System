@@ -1,0 +1,271 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
+
+class Flight {
+public:
+    string flightNumber;
+    string origin;
+    string destination;
+    string departureTime;
+    double price;
+
+    Flight(string fn, string o, string d, string dt, double p) 
+        : flightNumber(fn), origin(o), destination(d), departureTime(dt), price(p) {}
+};
+
+class User {
+public:
+    string username;
+    string password;
+
+    User(string u, string p) : username(u), password(p) {}
+};
+
+// Class to represent a ticket
+class Ticket {
+public:
+    string flightNumber;
+    string username;
+
+    Ticket(string fn, string u) : flightNumber(fn), username(u) {}
+};
+
+class Staff {
+public:
+    string name;
+    string role; 
+
+    Staff(string n, string r) : name(n), role(r) {}
+};
+
+class PaymentGateway {
+public:
+    static bool processPayment(double amount, const string& cardNumber, const string& expiryDate, const string& cvv) {
+        
+        if (cardNumber.length() != 16 || cvv.length() != 3) {
+            cout << "Invalid card details.\n";
+            return false; 
+        }
+
+        cout << "Processing payment of " << fixed << setprecision(2) << amount << "...\n";
+        return true; 
+    }
+};
+
+class FlightReservationSystem {
+private:
+    vector<Flight> flights;
+    vector<User> users;
+    vector<Ticket> tickets;
+    vector<Staff> staff; 
+
+public:
+    FlightReservationSystem() {
+   
+        flights.push_back(Flight("AI202", "Delhi", "Mumbai", "2025-01-10 10:00", 5000));
+        flights.push_back(Flight("AI203", "Mumbai", "Delhi", "2025-01-11 15:00", 5500));
+
+        addSpecificStaff();
+    }
+
+    void addSpecificStaff() {
+       
+        staff.push_back(Staff("Jayakrishna", "Pilot"));
+        staff.push_back(Staff("Santhosh", "Co-Pilot"));
+        staff.push_back(Staff("Raju", "Helper"));
+
+        staff.push_back(Staff("Shilpa", "Air Hostess"));
+        staff.push_back(Staff("Reenu", "Air Hostess"));
+    }
+
+    void registerUser() {
+        string username, password;
+        cout << "Enter username: ";
+        cin >> username;
+        cout << "Enter password: ";
+        cin >> password;
+        users.push_back(User(username, password));
+        cout << "User registered successfully!\n";
+    }
+
+    void searchAndBookFlight() {
+        cout << "\nAvailable Flights:\n";
+        for (size_t i = 0; i < flights.size(); ++i) {
+            cout << "Flight Number: " << flights[i].flightNumber 
+                 << ", From: " << flights[i].origin 
+                 << ", To: " << flights[i].destination 
+                 << ", Departure: " << flights[i].departureTime 
+                 << ", Price: " << fixed << setprecision(2) << flights[i].price 
+                 << endl;
+        }
+
+        string flightNumber, username;
+        cout << "Enter your Username: ";
+        cin >> username; 
+        cout << "Enter the Flight Number you want to book: ";
+        cin >> flightNumber;
+
+        bool found = false;
+        for (size_t i = 0; i < flights.size(); ++i) {
+            if (flights[i].flightNumber == flightNumber) {
+                found = true;
+
+                string cardNumber, expiryDate, cvv;
+                cout << "Enter Card Number (16 digits): ";
+                cin >> cardNumber;
+                cout << "Enter Expiry Date (MM/YY): ";
+                cin >> expiryDate; // In a real system, you'd validate this format.
+                cout << "Enter CVV (3 digits): ";
+                cin >> cvv;
+
+                if (PaymentGateway::processPayment(flights[i].price, cardNumber, expiryDate, cvv)) {
+                    tickets.push_back(Ticket(flights[i].flightNumber, username)); 
+                    cout << "Booking confirmed for Flight Number: " << flights[i].flightNumber 
+                         << ", Total Price: " << fixed << setprecision(2) << flights[i].price 
+                         << endl;
+                } else {
+                    cout << "Payment failed!\n";
+                }
+                break;
+            }
+        }
+        
+        if (!found) {
+            cout << "Flight not found!\n";
+        }
+    }
+
+    void displayTickets() {
+        cout << "\nBooked Tickets:\n";
+        for (size_t i = 0; i < tickets.size(); ++i) {
+            cout << "Ticket for Flight Number: " << tickets[i].flightNumber 
+                 << ", Username: " << tickets[i].username 
+                 << endl;
+        }
+    }
+
+    void scheduleFlight() {
+        string flightNumber, origin, destination, departureTime;
+        double price;
+
+        cout << "\nSchedule a new flight:\n";
+        cout << "Enter Flight Number: ";
+        cin >> flightNumber;
+        cout << "Enter Origin: ";
+        cin >> origin;
+        cout << "Enter Destination: ";
+        cin >> destination;
+        cout << "Enter Departure Time (YYYY-MM-DD HH:MM): ";
+        cin >> departureTime;
+        cout << "Enter Price: ";
+        cin >> price;
+
+        flights.push_back(Flight(flightNumber, origin, destination, departureTime, price));
+        cout << "Flight scheduled successfully!\n";
+    }
+
+   void manageStaff() {
+      cout << "\n--- Staff Management ---\n";
+      for (size_t i = 0; i < staff.size(); ++i) {
+          cout << staff[i].role + ": "
+               + staff[i].name 
+               + "\n";
+      }
+      if(staff.empty()) {
+          cout<<"No staff available.\n";
+      }
+      else{
+          cout<<"Total Staff Members: "<<staff.size()<<endl;  
+      }
+      
+      cout<<"\n";
+   }
+
+   void adminAnalytics() {
+      double totalRevenue = 0.0;
+      int totalTickets = tickets.size();
+      vector<int> flightCounts(flights.size(), 0); 
+
+      for (size_t i = 0; i < tickets.size(); ++i) {
+          for (size_t j = 0; j < flights.size(); ++j) {
+              if (tickets[i].flightNumber == flights[j].flightNumber) {
+                  totalRevenue += flights[j].price; 
+                  flightCounts[j]++;
+              }
+          }
+      }
+
+      cout << "\n--- Admin Analytics ---\n";
+      cout << "Total Revenue from Bookings: "
+           << fixed << setprecision(2)
+           << totalRevenue 
+           << endl;
+
+      cout << "Total Tickets Sold: "
+           << totalTickets 
+           << endl;
+
+      for (size_t j = 0; j < flights.size(); ++j) {
+          if (flightCounts[j] > 0) { 
+              cout << flights[j].flightNumber 
+                   << ": Tickets Sold = "
+                   << flightCounts[j] 
+                   << endl;
+          }
+      }
+   }
+
+   void displayMenu() {
+       int choice;
+       do {
+           cout << "\n--- Flight Reservation System ---\n";
+           cout << "1. Register User\n";
+           cout << "2. Search and Book Flight\n";
+           cout << "3. Display Booked Tickets\n";
+           cout << "4. Schedule New Flight\n";
+           cout << "5. Manage Staff\n";
+           cout << "6. Admin Analytics\n";
+           cout << "7. Exit\n";
+           cout << "Choose an option: ";
+           cin >> choice;
+
+           switch (choice) {
+               case 1:
+                   registerUser();
+                   break;
+               case 2:
+                   searchAndBookFlight();
+                   break;
+               case 3:
+                   displayTickets();
+                   break;
+               case 4:
+                   scheduleFlight();
+                   break;
+               case 5:
+                   manageStaff();
+                   break;
+               case 6:
+                   adminAnalytics();
+                   break;
+               case 7:
+                   cout << "Exiting...\n";
+                   break;
+               default:
+                   cout << "Invalid choice! Please try again.\n";
+           }
+       } while (choice != 7);
+   }
+};
+
+int main() {
+   FlightReservationSystem system;
+   system.displayMenu();
+   return 0;  
+}
